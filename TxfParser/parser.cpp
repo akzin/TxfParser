@@ -11,12 +11,12 @@ using namespace std;
 txf_object parse_recursive(ifstream& stream, string& parent_tag_name) {
     txf_object obj;
     string line;
-    while (getline(stream, line))
-    {
-        auto firstChar = line[0];
+    
+    while (getline(stream, line)) {
+        auto first_char = line[0];
         auto rest = line.substr(1);
         
-        switch (firstChar) {
+        switch (first_char) {
             case '$': {
                 auto idx = rest.find_first_of('=');
                 
@@ -25,16 +25,15 @@ txf_object parse_recursive(ifstream& stream, string& parent_tag_name) {
                     o << "no = sign: " << line;
                     throw o.str();
                 }
+                
                 auto key = rest.substr(0,idx);
                 auto value = rest.substr(idx+1);
                 obj.properties[key] = value;
                 break;
             }
-            case '#': {
-                auto sub_obj = parse_recursive(stream, rest);
-                obj.sub_objects[rest].push_back(sub_obj);
+            case '#':
+                obj.sub_objects[rest].push_back(parse_recursive(stream, rest));
                 break;
-            }
             case '/':
                 if(rest != parent_tag_name) {
                     ostringstream o;
@@ -64,8 +63,7 @@ txf_object parse(const std::string& file_path) {
     
     ifstream stream(file_path);
     string line;
-    if (getline(stream, line))
-    {
+    if (getline(stream, line)) {
         string tag_name = line.substr(1);
         result = parse_recursive(stream, tag_name);
     } else {
